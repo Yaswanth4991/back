@@ -51,7 +51,7 @@ const upload = multer({
   }),
 });
 
-app.post('/upload', upload.single('file'), ...);
+
 
 
 
