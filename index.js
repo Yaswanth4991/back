@@ -5,6 +5,8 @@ const express = require('express');
 const Movie = require('./Models/Movie')
 const multer = require('multer');
 const cors = require('cors')
+const multerS3 = require('multer-S3');
+const aws = require('aws-sdk');
 
 
 mongoose.connect('mongodb+srv://yaswanthyash7726:yaswanthyash7726@cluster1.u36q5cl.mongodb.net/test', { useNewUrlParser: true, useUnifiedTopology: true })
@@ -27,15 +29,22 @@ app.use(express.json())
 app.use(cors())
 
 // multer configuration
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, './uploads')
-  },
-  filename: (req, file, cb) => {
-    cb(null, Date.now() + '-' + file.originalname)
-  }
+var upload = multer({
+  storage: s3({
+      dirname: '/',
+      bucket: 'capstone7726',
+      secretAccessKey: 'PXIplXfl2A3IZWbvZjOh6tp/0e5ajOaa7ffyk/Gs',
+      accessKeyId: 'AKIA2QSHIALABCRNRCGP',
+      region: 'ap-south-1',
+      filename: function (req, file, cb) {
+          cb(null, file.originalname); 
+      }
+  })
 });
-const upload = multer({ storage });
+
+app.post('/upload', upload.array('file'), function (req, res, next) {
+  res.send("Uploaded!");
+});
 
 
 // routes
