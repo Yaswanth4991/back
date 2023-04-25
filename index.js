@@ -5,7 +5,7 @@ const express = require('express');
 const Movie = require('./Models/Movie')
 const multer = require('multer');
 const cors = require('cors')
-const multerS3 = require('multer-S3');
+const multerS3 = require('multer-s3');
 const aws = require('aws-sdk');
 
 
@@ -30,22 +30,30 @@ app.use(cors())
 
 // multer configuration
 
-const s3 = new aws.S3({})
-var upload = multer({
-  storage: s3({
-      dirname: '/',
-      bucket: 'capstone7726',
+const storage = multer.diskStorage({
+  destination: function(req, file, cb) {
+    cb(null, 'uploads/');
+  },
+  filename: function(req, file, cb) {
+    cb(null, file.originalname);
+  }
+});
+
+exports.upload = multer({storage: storage}).single('file');
+
+
+const s3 = new aws.S3({
+
       secretAccessKey: 'PXIplXfl2A3IZWbvZjOh6tp/0e5ajOaa7ffyk/Gs',
       accessKeyId: 'AKIA2QSHIALABCRNRCGP',
       region: 'ap-south-1',
-    
-})
-exports.upload = multer({storage});
+});
+exports.upload = multer({ storage });
 
 exports.uploadS3 = multer({
   storage: multerS3({
     s3: s3,
-    bucket: "some-bucket",
+    bucket: "capstone7726",
     acl: 'public-read',
     metadata: function(req, file, cb) {
       cb(null, { fieldName: file.fieldname });
