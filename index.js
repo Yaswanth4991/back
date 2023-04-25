@@ -6,7 +6,7 @@ const Movie = require('./Models/Movie')
 const multer = require('multer');
 const cors = require('cors')
 const multerS3 = require('multer-s3');
-const aws = require('aws-sdk');
+const AWS = require('aws-sdk');
 
 
 mongoose.connect('mongodb+srv://yaswanthyash7726:yaswanthyash7726@cluster1.u36q5cl.mongodb.net/test', { useNewUrlParser: true, useUnifiedTopology: true })
@@ -30,44 +30,29 @@ app.use(cors())
 
 // multer configuration
 
-const storage = multer.diskStorage({
-  destination: function(req, file, cb) {
-    cb(null, 'uploads/');
-  },
-  filename: function(req, file, cb) {
-    cb(null, file.originalname);
-  }
+AWS.config.update({
+  accessKeyId: 'AKIA2QSHIALAKIASP2CU',
+  secretAccessKey: '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',
+  region: 'ap-south-1',
 });
+const s3 = new AWS.S3();
 
-exports.upload = multer({storage: storage}).single('file');
-
-
-const s3 = new aws.S3({
-
-      secretAccessKey: 'PXIplXfl2A3IZWbvZjOh6tp/0e5ajOaa7ffyk/Gs',
-      accessKeyId: 'AKIA2QSHIALABCRNRCGP',
-      region: 'ap-south-1',
-});
-exports.upload = multer({ storage });
-
-exports.uploadS3 = multer({
+const upload = multer({
   storage: multerS3({
     s3: s3,
-    bucket: "capstone7726",
-    acl: 'public-read',
-    metadata: function(req, file, cb) {
+    bucket: 'capstone7726',
+    acl: 'public-read', // Set the desired access control for uploaded files
+    metadata: function (req, file, cb) {
       cb(null, { fieldName: file.fieldname });
     },
-    key: function(req, file, cb) {
-      cb(null, Date.now().toString());
+    key: function (req, file, cb) {
+      cb(null, Date.now().toString() + '-' + file.originalname);
     },
-    throwMimeTypeConflictErrorIf: (contentType, mimeType, _file) => ![mimeType, 'application/octet-stream'].includes(contentType)
-  })
+  }),
 });
 
-app.post('/upload', upload.array('file'), function (req, res, next) {
-  res.send("Uploaded!");
-});
+app.post('/upload', upload.single('file'), ...);
+
 
 
 // routes
