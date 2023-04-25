@@ -29,6 +29,8 @@ app.use(express.json())
 app.use(cors())
 
 // multer configuration
+
+const s3 = new aws.S3({})
 var upload = multer({
   storage: s3({
       dirname: '/',
@@ -36,9 +38,22 @@ var upload = multer({
       secretAccessKey: 'PXIplXfl2A3IZWbvZjOh6tp/0e5ajOaa7ffyk/Gs',
       accessKeyId: 'AKIA2QSHIALABCRNRCGP',
       region: 'ap-south-1',
-      filename: function (req, file, cb) {
-          cb(null, file.originalname); 
-      }
+    
+});
+exports.upload = multer({storage});
+
+exports.uploadS3 = multer({
+  storage: multerS3({
+    s3: s3,
+    bucket: "some-bucket",
+    acl: 'public-read',
+    metadata: function(req, file, cb) {
+      cb(null, { fieldName: file.fieldname });
+    },
+    key: function(req, file, cb) {
+      cb(null, Date.now().toString());
+    },
+    throwMimeTypeConflictErrorIf: (contentType, mimeType, _file) => ![mimeType, 'application/octet-stream'].includes(contentType)
   })
 });
 
