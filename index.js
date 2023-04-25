@@ -39,7 +39,7 @@ var upload = multer({
       accessKeyId: 'AKIA2QSHIALABCRNRCGP',
       region: 'ap-south-1',
     
-});
+})
 exports.upload = multer({storage});
 
 exports.uploadS3 = multer({
